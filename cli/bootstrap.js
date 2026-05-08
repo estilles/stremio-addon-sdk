@@ -3,7 +3,7 @@
 const [,, ...args] = process.argv
 const dir = args.find(arg => !arg.startsWith('--'))
 
-const chalk = require('chalk')
+const { default: chalk } = require('chalk')
 const fs = require('fs')
 const path = require('path')
 const {promisify} = require('util')

@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/Stremio/stremio-addon-sdk#readme",
   "dependencies": {
-    "chalk": "^2.4.2",
+    "chalk": "^5.6.2",
     "cors": "^2.8.4",
     "express": "^4.16.3",
     "inquirer": "^6.2.2",
