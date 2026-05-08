@@ -58,7 +58,7 @@ function getRouter({ manifest , get }) {
 		if ((config || '').length) {
 			try {
 				config = JSON.parse(config)
-			} catch(e) {
+			} catch {
 				config = false
 			}
 		}
