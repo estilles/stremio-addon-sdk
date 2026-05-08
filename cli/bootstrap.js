@@ -8,7 +8,7 @@ const fs = require('fs')
 const path = require('path')
 const {promisify} = require('util')
 const mkdirp = promisify(require('mkdirp'))
-const inquirer = require('inquirer')
+const { default: inquirer } = require('inquirer')
 
 if (typeof(dir) !== 'string') usage()
 if (fs.existsSync(dir)) usage({exists: true})
@@ -22,6 +22,14 @@ createAddon()
 		console.log(chalk.blue(`cd ${dir}`))
 		console.log(chalk.blue('npm install'))
 		console.log(chalk.blue('npm start -- --launch'))
+	})
+	.catch((error) => {
+		if (error.name === 'ExitPromptError') {
+			process.exit(0)
+		}
+
+		console.error(JSON.stringify(error, null, 2))
+		process.exit(1)
 	})
 
 async function createAddon() {
