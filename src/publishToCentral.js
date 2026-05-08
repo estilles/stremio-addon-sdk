@@ -1,4 +1,4 @@
-const fetch = require('node-fetch')
+const { default: fetch } = require('node-fetch')
 
 const DEFAULT_API_URL = 'https://api.strem.io'
 
