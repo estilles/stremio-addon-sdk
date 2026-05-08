@@ -5,7 +5,7 @@ const request = require('supertest')
 const AddonClient = require('stremio-addon-client')
 const { addonBuilder, serveHTTP, getRouter } = require('../')
 
-const PORT = 5000
+const PORT = 0
 
 let addonUrl
 let addonServer
