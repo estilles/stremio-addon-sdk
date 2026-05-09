@@ -37,14 +37,14 @@
     "node-fetch": "^3.3.2",
     "opn": "^5.5.0",
     "router": "^2.2.0",
-    "stremio-addon-linter": "^1.7.0"
+    "stremio-addon-linter": "https://github.com/estilles/stremio-addon-linter.git#use-until-pr-merged"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
     "eslint": "^10.3.0",
     "globals": "^17.6.0",
-    "stremio-addon-client": "https://github.com/Stremio/stremio-addon-client.git#v1.16.1",
+    "stremio-addon-client": "https://github.com/estilles/stremio-addon-client.git#use-until-pr-merged",
     "supertest": "^7.2.2",
     "tape": "^5.9.0",
     "typescript": "^6.0.3"
