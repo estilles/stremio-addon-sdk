@@ -40,15 +40,17 @@ function getRouter({ manifest , get }) {
 	router.get(`${configPrefix}/manifest.json`, manifestHandler)
 
 	// using the same method used in builder.js to extract resources from manifest
-	const handlersInManifest = []
-	if (manifest.catalogs.length > 0) handlersInManifest.push('catalog')
-	manifest.resources.forEach((r) => handlersInManifest.push(r.name || r))
+	const handlersInManifest = new Set()
+	if (manifest.catalogs.length > 0) handlersInManifest.add('catalog')
+	manifest.resources.forEach((r) => handlersInManifest.add(r.name || r))
 	
 	// converting the resources array to a regular expression
-	const ResourcesRegex = handlersInManifest && handlersInManifest.length ? '(' + handlersInManifest.join('|') + ')' : '' 
+	const resources = Array.from(handlersInManifest).join('|')
+	const route =
+		new RegExp(`^\\/(?<resource>(?:${resources}))\\/(?<type>[^/]+)\\/(?<id>[^/]+)(?:\\/(?<extra>[^/]+))?\\.json$`)
 
 	// Handle all resources
-	router.get(`${configPrefix}/:resource${ResourcesRegex}/:type/:id/:extra?.json`, function(req, res, next) {
+	router.get(route, function(req, res, next) {
 		const { resource, type, id } = req.params
 		let { config } = req.params
 		// we get `extra` from `req.url` because `req.params.extra` decodes the characters
