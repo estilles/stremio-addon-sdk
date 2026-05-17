@@ -4,7 +4,7 @@ const cors = require('cors')
 
 const warned = {}
 
-function getRouter({ manifest , get }) {
+function getRouter({ manifest, get }) {
 	const router = new Router()
 
 	// CORS is mandatory for the addon protocol
@@ -20,7 +20,7 @@ function getRouter({ manifest , get }) {
 			// we remove configurationRequired so the addon is installable after configuration
 			delete manifestClone.behaviorHints.configurationRequired
 			// we remove configuration page for installed addon too (could be added later to the router)
-			delete manifestClone.behaviorHints.configurable			
+			delete manifestClone.behaviorHints.configurable
 			manifestRespBuf = JSON.stringify(manifestClone)
 		}
 		res.setHeader('Content-Type', 'application/json; charset=utf-8')
@@ -33,24 +33,24 @@ function getRouter({ manifest , get }) {
 		console.warn('manifest.config is set but manifest.behaviorHints.configurable is disabled, the "Configure" button will not show in the Stremio apps')
 	}
 
-	const configPrefix = hasConfig ? '/:config?' : ''
+	const configPrefix = hasConfig ? '(?<config>\\/.+){0,1}' : ''
+	const manifestRoute = new RegExp(`^${configPrefix}\\/manifest\\.json$`)
 	// having config prifix always set to '/:config?' won't resault in a problem for non configurable addons,
 	// since now the order is restricted by resources.
 
-	router.get(`${configPrefix}/manifest.json`, manifestHandler)
+	router.get(manifestRoute, manifestHandler)
 
 	// using the same method used in builder.js to extract resources from manifest
 	const handlersInManifest = new Set()
 	if (manifest.catalogs.length > 0) handlersInManifest.add('catalog')
 	manifest.resources.forEach((r) => handlersInManifest.add(r.name || r))
-	
+
 	// converting the resources array to a regular expression
 	const resources = Array.from(handlersInManifest).join('|')
-	const route =
-		new RegExp(`^\\/(?<resource>(?:${resources}))\\/(?<type>[^/]+)\\/(?<id>[^/]+)(?:\\/(?<extra>[^/]+))?\\.json$`)
+	const resourceRoute = new RegExp(`^${configPrefix}\\/(?<resource>(?:${resources}))\\/(?<type>[^/]+)\\/(?<id>[^/]+)(?:\\/(?<extra>[^/]+))?\\.json$`)
 
 	// Handle all resources
-	router.get(route, function(req, res, next) {
+	router.get(resourceRoute, function (req, res, next) {
 		const { resource, type, id } = req.params
 		let { config } = req.params
 		// we get `extra` from `req.url` because `req.params.extra` decodes the characters
@@ -66,25 +66,25 @@ function getRouter({ manifest , get }) {
 		}
 		res.setHeader('Content-Type', 'application/json; charset=utf-8')
 		get(resource, type, id, extra, config)
-			.then(resp => {
-
+			.then((resp) => {
 				let cacheHeaders = {
 					cacheMaxAge: 'max-age',
 					staleRevalidate: 'stale-while-revalidate',
 					staleError: 'stale-if-error'
 				}
 
-				const cacheControl = Object.keys(cacheHeaders).map(prop => {
-					const cacheProp = cacheHeaders[prop]
-					const cacheValue = resp[prop]
-					if (!Number.isInteger(cacheValue)) return false
-					if (cacheValue > 365 * 24 * 60 * 60)
-						console.warn(`${prop} set to more then 1 year, be advised that cache times are in seconds, not milliseconds.`)
-					return cacheProp + '=' + cacheValue
-				}).filter(val => !!val).join(', ')
+				const cacheControl = Object.keys(cacheHeaders)
+					.map((prop) => {
+						const cacheProp = cacheHeaders[prop]
+						const cacheValue = resp[prop]
+						if (!Number.isInteger(cacheValue)) return false
+						if (cacheValue > 365 * 24 * 60 * 60) console.warn(`${prop} set to more then 1 year, be advised that cache times are in seconds, not milliseconds.`)
+						return cacheProp + '=' + cacheValue
+					})
+					.filter((val) => !!val)
+					.join(', ')
 
-				if (cacheControl)
-					res.setHeader('Cache-Control', `${cacheControl}, public`)
+				if (cacheControl) res.setHeader('Cache-Control', `${cacheControl}, public`)
 
 				if (resp.redirect) {
 					res.redirect(307, resp.redirect)
@@ -94,14 +94,14 @@ function getRouter({ manifest , get }) {
 				res.setHeader('Content-Type', 'application/json; charset=utf-8')
 
 				if (!warned.filename && resource === 'stream' && ((resp || {}).streams || []).length)
-					if (resp.streams.find(stream => stream && stream.url && !(stream.behaviorHints || {}).filename)) {
+					if (resp.streams.find((stream) => stream && stream.url && !(stream.behaviorHints || {}).filename)) {
 						warned.filename = true
 						console.warn('streams include stream.url but do not include stream.behaviorHints.filename, this is not recommended, subtitles may not be retrieved for these streams')
 					}
 
 				res.end(JSON.stringify(resp))
 			})
-			.catch(err => {
+			.catch((err) => {
 				if (err.noHandler) {
 					if (next) next()
 					else {
